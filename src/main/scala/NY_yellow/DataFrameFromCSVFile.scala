@@ -48,11 +48,11 @@ object DataFrameFromCSVFile {
     //процент поездок по количеству пасс за день
     val percent_trip = group_trip.join(count_by_day, group_trip("pick_up") === count_by_day("tpep_pickup_datetime"), "inner")
       .select(col("pick_up"), col("drop_off"),
-        expr("p0/trip_count_by_day.count").as("%0"),
-        expr("p1/trip_count_by_day.count").as("%1p"),
-        expr("p2/trip_count_by_day.count").as("%2p"),
-        expr("p3/trip_count_by_day.count").as("%3p"),
-        expr("p4/trip_count_by_day.count").as("%4+"))
+        expr("(p0/trip_count_by_day.count)*100").cast("int").as("%0"),
+        expr("(p1/trip_count_by_day.count)*100").cast("int").as("%1p"),
+        expr("(p2/trip_count_by_day.count)*100").cast("int").as("%2p"),
+        expr("(p3/trip_count_by_day.count)*100").cast("int").as("%3p"),
+        expr("(p4/trip_count_by_day.count)*100").cast("int").as("%4+"))
       .where("pick_up==tpep_pickup_datetime and drop_off ==tpep_dropoff_datetime")
 
 
