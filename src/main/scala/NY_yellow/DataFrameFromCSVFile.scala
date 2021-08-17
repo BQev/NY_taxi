@@ -15,28 +15,19 @@ object DataFrameFromCSVFile {
 
     spark.sparkContext.setLogLevel("ERROR")
 
-
-
-
-
     //read csv with options
     val df = spark.read.options(Map("inferSchema" -> "true", "delimiter" -> ",", "header" -> "true"))
       .csv("C:/Users/eostanin/NY taxi/yellow_tripdata_2020-01.csv")
-
-
+      .withColumn("tpep_pickup_datetime", to_date(col("tpep_pickup_datetime"), "yyyy-MM-dd HH:mm:ss"))
+      .withColumn("tpep_dropoff_datetime", to_date(col("tpep_dropoff_datetime"), "yyyy-MM-dd HH:mm:ss"))
 
     //таблица для количества поездок за 1 день
     val count_by_day = df
-      .withColumn("tpep_pickup_datetime", to_date(col("tpep_pickup_datetime"), "yyyy-MM-dd HH:mm:ss"))
-      .withColumn("tpep_dropoff_datetime", to_date(col("tpep_dropoff_datetime"), "yyyy-MM-dd HH:mm:ss"))
       .select(col("tpep_pickup_datetime"), col("tpep_dropoff_datetime"))
       .groupBy("tpep_pickup_datetime", "tpep_dropoff_datetime").count().as("trip_count_by_day")
 
-
     //string->date , кол-во поездок по количеству пассажиров
     val group_trip = df
-      .withColumn("tpep_pickup_datetime", to_date(col("tpep_pickup_datetime"), "yyyy-MM-dd HH:mm:ss"))
-      .withColumn("tpep_dropoff_datetime", to_date(col("tpep_dropoff_datetime"), "yyyy-MM-dd HH:mm:ss"))
       .select(col("tpep_pickup_datetime").as("pick_up"), col("tpep_dropoff_datetime").as("drop_off"), col("passenger_count").as("passenger"))
       .groupBy("pick_up", "drop_off", "passenger").count().as("trip")
       .withColumn("p0", expr("if(passenger=0,trip.count,0)"))
@@ -55,10 +46,8 @@ object DataFrameFromCSVFile {
         expr("(p4/trip_count_by_day.count)*100").cast("int").as("%4+"))
       .where("pick_up==tpep_pickup_datetime and drop_off ==tpep_dropoff_datetime")
 
-
     percent_trip
       .write.mode(SaveMode.Overwrite).parquet("C:/Users/eostanin/NY taxi/yellow_tripdata_2020-01.parquet")
-
     percent_trip.show(100)
     percent_trip.printSchema()
 
