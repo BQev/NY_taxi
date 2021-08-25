@@ -1,6 +1,7 @@
 package NY_yellow
 
 
+import org.apache.spark.HashPartitioner
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
